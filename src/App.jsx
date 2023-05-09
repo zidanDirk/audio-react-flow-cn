@@ -1,39 +1,45 @@
-import { useState } from 'react'
-import './App.css'
+import React from 'react';
+import ReactFlow, { Background } from 'reactflow';
+import { shallow } from 'zustand/shallow';
+import Osc from './nodes/Osc';
+import Out from './nodes/Out';
+import Amp from './nodes/Amp'
+import 'reactflow/dist/style.css';
 
-const context = new AudioContext();
-const osc = context.createOscillator();
-const amp = context.createGain();
+import { useStore } from './store';
 
-osc.connect(amp);
-amp.connect(context.destination);
+const selector = (store) => ({
+  nodes: store.nodes,
+  edges: store.edges,
+  onNodesChange: store.onNodesChange,
+  onEdgesChange: store.onEdgesChange,
+  addEdge: store.addEdge,
+  onEdgesDelete: store.onEdgesDelete,
+  onNodesDelete: store.removeNodes,
+});
 
-osc.start();
-
-const updateValues = (e) => {
-  const freq = (e.clientX / window.innerWidth) * 1000;
-  const gain = e.clientY / window.innerHeight;
-
-  osc.frequency.value = freq;
-  amp.gain.value = gain;
+const nodeTypes = {
+  osc: Osc,
+  out: Out,
+  amp: Amp
 };
 
-
 export default function App() {
-  const [ isRunning, setIsRunning ] = useState(false)
-  const toggleAudio = () => {
-    if (context.state === 'suspended') {
-      context.resume();
-      setIsRunning(true)
-    } else {
-      context.suspend();
-      setIsRunning(false)
-    }
-  };
+  const store = useStore(selector, shallow);
 
-  return <div
-     style={{ width: '100vw', height: '100vh' }} 
-     onMouseMove={updateValues} >
-          <button onClick={toggleAudio}>{isRunning ? '🔊' : '🔇'}</button>
-     </div>;
+  return (
+    <ReactFlow
+      nodes={store.nodes}
+      nodeTypes={nodeTypes}
+      edges={store.edges}
+      onNodesDelete={store.onNodesDelete}
+      onNodesChange={store.onNodesChange}
+      onEdgesChange={store.onEdgesChange}
+      onEdgesDelete={store.onEdgesDelete}
+      onConnect={store.addEdge}
+      fitView
+    >
+      <Background />
+    </ReactFlow>
+  );
 }
