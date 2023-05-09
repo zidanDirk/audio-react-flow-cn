@@ -20,6 +20,8 @@ const selector = (store) => ({
   createNode: store.createNode,
 });
 
+
+
 const nodeTypes = {
   osc: Osc,
   out: Out,
@@ -28,7 +30,6 @@ const nodeTypes = {
 
 export default function App() {
   const store = useStore(selector, shallow);
-
   return (
     <ReactFlow
       nodes={store.nodes}
