@@ -1,7 +1,7 @@
 import { applyNodeChanges, applyEdgeChanges } from 'reactflow';
 import { nanoid } from 'nanoid';
 import { create } from 'zustand';
-import { updateAudioNode, removeAudioNode, connect, disconnect, isRunning, toggleAudio } from './audio';
+import { updateAudioNode, removeAudioNode, connect, disconnect, isRunning, toggleAudio, createAudioNode } from './audio';
 
 export const useStore = create((set, get) => ({
     nodes: [
@@ -9,18 +9,18 @@ export const useStore = create((set, get) => ({
             id: 'a',
             type: 'osc',
             data: { frequency: 220, type: 'square' },
-            position: { x: 0, y: 0 }
+            position: { x: 200, y: 0 }
         },
         { 
             id: 'b', 
             type: 'amp', 
             data: { gain: 0.5 },
-            position: { x: 150, y: 150 } 
+            position: { x: 150, y: 250 } 
         },
         { 
             id: 'c',
             type: 'out',
-            position: { x: 350, y: 200 } 
+            position: { x: 350, y: 400 } 
         }
     ],
     edges: [],
@@ -53,9 +53,11 @@ export const useStore = create((set, get) => ({
     },
 
     onEdgesDelete(deleted) {
-        for ({ source, target } of deleted) {
+        for (const item of deleted) {
+            const { source, target} = item
             disconnect(source, target);
         }
+
     },
 
     updateNode(id, data) {
@@ -73,5 +75,30 @@ export const useStore = create((set, get) => ({
           removeAudioNode(id)
         }
     },
+
+    createNode(type) {
+        const id = nanoid();
+        switch(type) {
+            case 'osc': {
+              const data = { frequency: 440, type: 'sine' };
+              const position = { x: 0, y: 0 };
+      
+              createAudioNode(id, type, data);
+              set({ nodes: [...get().nodes, { id, type, data, position }] });
+      
+              break;
+            }
+      
+            case 'amp': {
+              const data = { gain: 0.5 };
+              const position = { x: 0, y: 0 };
+      
+              createAudioNode(id, type, data);
+              set({ nodes: [...get().nodes, { id, type, data, position }] });
+      
+              break;
+            }
+        }
+    }
     
 }));
